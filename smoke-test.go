@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
-	"time"
 )
 
 func main() {
@@ -32,25 +32,38 @@ func main() {
 
 func handleConnection(connection net.Conn) {
 	defer connection.Close()
+
+	// _, err := io.Copy(connection, connection)
+	// if err != nil {
+	// 	fmt.Printf("Error during io.Copy: %v\n", err)
+	// }
+
 	fmt.Printf("Connection from %s\n", connection.RemoteAddr().String())
-	connection.SetReadDeadline(time.Now().Add(time.Minute))
 
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 32*1024)
 
-	length, err := connection.Read(buffer)
+	for {
 
-	if err != nil {
-		fmt.Printf("Failed to read message from client: %v\n", err)
-		connection.Close()
-		return
+		length, err := connection.Read(buffer)
+
+		if err != nil {
+			fmt.Printf("Failed to read message from client: %v\n", err)
+			if err == io.EOF {
+				fmt.Printf("Client closed the connection\n")
+				connection.Write(buffer)
+			}
+			connection.Close()
+			return
+		}
+
+		if length == 0 {
+			fmt.Printf("Empty message\n")
+			continue
+		}
+
+		message := string(buffer[:length])
+		fmt.Printf("Received: %s\n", message)
+
 	}
-
-	message := string(buffer[:length])
-
-	fmt.Printf("Received: %d bytes \t: %s\n", length, message)
-
-	connection.Write([]byte(message))
-
-	//connection.Close()
 
 }

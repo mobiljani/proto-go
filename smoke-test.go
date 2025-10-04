@@ -33,37 +33,37 @@ func main() {
 func handleConnection(connection net.Conn) {
 	defer connection.Close()
 
-	// _, err := io.Copy(connection, connection)
-	// if err != nil {
-	// 	fmt.Printf("Error during io.Copy: %v\n", err)
-	// }
-
-	fmt.Printf("Connection from %s\n", connection.RemoteAddr().String())
-
-	buffer := make([]byte, 32*1024)
-
-	for {
-
-		length, err := connection.Read(buffer)
-
-		if err != nil {
-			fmt.Printf("Failed to read message from client: %v\n", err)
-			if err == io.EOF {
-				fmt.Printf("Client closed the connection\n")
-				connection.Write(buffer)
-			}
-			connection.Close()
-			return
-		}
-
-		if length == 0 {
-			fmt.Printf("Empty message\n")
-			continue
-		}
-
-		message := string(buffer[:length])
-		fmt.Printf("Received: %s\n", message)
-
+	_, err := io.Copy(connection, connection)
+	if err != nil {
+		fmt.Printf("Error during io.Copy: %v\n", err)
 	}
+
+	// fmt.Printf("Connection from %s\n", connection.RemoteAddr().String())
+
+	// buffer := make([]byte, 32*1024)
+
+	// for {
+
+	// 	length, err := connection.Read(buffer)
+
+	// 	if err != nil {
+	// 		fmt.Printf("Failed to read message from client: %v\n", err)
+	// 		if err == io.EOF {
+	// 			fmt.Printf("Client closed the connection\n")
+	// 			connection.Write(buffer)
+	// 		}
+	// 		connection.Close()
+	// 		break
+	// 	}
+
+	// 	if length == 0 {
+	// 		fmt.Printf("Empty message\n")
+	// 		continue
+	// 	}
+
+	// 	message := string(buffer[:length])
+	// 	fmt.Printf("Received: %s\n", message)
+
+	// }
 
 }

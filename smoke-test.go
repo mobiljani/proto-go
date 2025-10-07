@@ -50,7 +50,7 @@ func handleConnection(connection net.Conn) {
 		}
 		if readError != nil {
 			if readError.Error() == "EOF" {
-				fmt.Printf("Connection closed\n")
+				fmt.Printf("Connection closed by client\n")
 			} else {
 				fmt.Printf("Error during read: %v\n", readError)
 			}

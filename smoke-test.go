@@ -45,22 +45,15 @@ func handleConnection(connection net.Conn) {
 		bytesRead, readError := connection.Read(buffer)
 		fmt.Printf("Read %d bytes\n", bytesRead)
 		if bytesRead > 0 {
-
-			bytesWritten, writeError := connection.Write(buffer[0:bytesRead])
+			bytesWritten, _ := connection.Write(buffer[0:bytesRead])
 			fmt.Printf("Wrote %d bytes\n", bytesWritten)
-
-			if writeError != nil {
-				fmt.Printf("Error during write: %v\n", writeError)
-				break
-			}
-
-			if bytesWritten < 0 || bytesWritten > bytesRead {
-				fmt.Printf("Wrote invalid number of bytes: %d\n", bytesWritten)
-				break
-			}
 		}
 		if readError != nil {
-			fmt.Printf("Error during read: %v\n", readError)
+			if readError.Error() == "EOF" {
+				fmt.Printf("Connection closed\n")
+			} else {
+				fmt.Printf("Error during read: %v\n", readError)
+			}
 			break
 		}
 	}

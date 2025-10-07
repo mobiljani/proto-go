@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"net"
 )
 
@@ -43,17 +42,26 @@ func handleConnection(connection net.Conn) {
 	buffer := make([]byte, 32*1024)
 
 	for {
-
 		bytesRead, readError := connection.Read(buffer)
+		fmt.Printf("Read %d bytes\n", bytesRead)
 		if bytesRead > 0 {
 
-			connection.Write(buffer[0:bytesRead])
+			bytesWritten, writeError := connection.Write(buffer[0:bytesRead])
+			fmt.Printf("Wrote %d bytes\n", bytesWritten)
 
-			if readError == io.EOF {
-				fmt.Printf("Client closed the connection\n")
+			if writeError != nil {
+				fmt.Printf("Error during write: %v\n", writeError)
 				break
 			}
 
+			if bytesWritten < 0 || bytesWritten > bytesRead {
+				fmt.Printf("Wrote invalid number of bytes: %d\n", bytesWritten)
+				break
+			}
+		}
+		if readError != nil {
+			fmt.Printf("Error during read: %v\n", readError)
+			break
 		}
 	}
 

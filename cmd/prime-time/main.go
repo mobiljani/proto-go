@@ -3,10 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"math/big"
 	"net"
-	"os"
 )
 
 type request struct {
@@ -22,22 +20,18 @@ type response struct {
 func main() {
 	port := 8081
 
-	// Configure slog to output to stdout with text format
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	slog.SetDefault(logger)
-
 	list, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	slog.Info("Server started", "port", port)
+	fmt.Printf("Server started on port %d\n", port)
 
 	if err != nil {
-		slog.Info(err.Error(), "error", err)
+		fmt.Printf("Error: %v\n", err)
 		return
 	}
 	for {
 		conn, err := list.Accept()
 
 		if err != nil {
-			slog.Info(err.Error(), "error", err)
+			fmt.Printf("Error: %v\n", err)
 			return
 		}
 
@@ -48,29 +42,29 @@ func main() {
 func handleConnection(connection net.Conn) {
 	defer connection.Close()
 
-	slog.Info("Client connected", "address", connection.RemoteAddr().String())
+	fmt.Printf("Client connected: %s\n", connection.RemoteAddr().String())
 
 	buffer := make([]byte, 4*1024)
 	for {
 		bytesRead, err := connection.Read(buffer)
 		if err != nil {
-			slog.Info("Error during read", "error", err)
+			fmt.Printf("Error during read: %v\n", err)
 			break
 		}
 
-		slog.Info("Message", "msg", string(buffer[0:bytesRead]))
+		fmt.Printf("Message: %s\n", string(buffer[0:bytesRead]))
 
 		req := request{}
 
 		jsonError := json.Unmarshal(buffer[0:bytesRead], &req)
 
 		if jsonError != nil {
-			slog.Info("Error during JSON unmarshal", "error", jsonError)
+			fmt.Printf("Error during JSON unmarshal: %v\n", jsonError)
 			break
 		}
 
 		if req.Method != "isPrime" {
-			slog.Info("Unknown method", "method", req.Method)
+			fmt.Printf("Unknown method: %s\n", req.Method)
 			break
 		}
 

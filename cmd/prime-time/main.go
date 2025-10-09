@@ -18,7 +18,7 @@ type response struct {
 }
 
 func main() {
-	port := 8081
+	port := 8080
 
 	list, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	fmt.Printf("Server started on port %d\n", port)

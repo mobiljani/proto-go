@@ -13,6 +13,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: 'mobiljani/smoke-test' #${{ github.repository }}
+  SERVER_DIR: 'cmd/smoke-test/main.go'
 
 # There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
 jobs:
@@ -54,7 +55,7 @@ jobs:
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          args: --build-arg SERVER_DIR=cmd/smoke-test/smoke-test.go
+          args: --build-arg SERVER_DIR=${{ env.SERVER_DIR }}
 
       
       # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see [Using artifact attestations to establish provenance for builds](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds).

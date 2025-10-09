@@ -1,6 +1,6 @@
 FROM golang:1.25-alpine3.22 AS build
 
-ARG SERVER_DIR=cmd/smoke-test/smoke-test.go
+ARG SERVER_DIR=cmd/smoke-test/main.go
 
 # Set destination for COPY
 WORKDIR /app

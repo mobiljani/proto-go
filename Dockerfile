@@ -1,4 +1,4 @@
-FROM golang:1.25-alpine3.22
+FROM golang:1.25-alpine3.22 AS build
 
 ARG SERVER_DIR=cmd/smoke-test/smoke-test.go
 
@@ -16,12 +16,19 @@ COPY . .
 # Build
 RUN CGO_ENABLED=0 GOOS=linux go build -o /server ${SERVER_DIR}
 
-# Optional:
-# To bind to a TCP port, runtime parameters must be supplied to the docker command.
-# But we can document in the Dockerfile what ports
-# the application is going to listen on by default.
-# https://docs.docker.com/reference/dockerfile/#expose
-EXPOSE 8080
+# Runtime stage
+FROM golang:1.25-alpine3.22 AS runtime
 
+ARG PORT=8080
+
+EXPOSE ${PORT}
+
+RUN adduser -D runtimeuser
+USER runtimeuser
+
+# Set the workdir
+WORKDIR /home/runtimeuser
+
+COPY --from=build /server /server
 # Run
 CMD ["/server"]

@@ -1,4 +1,6 @@
-FROM golang:1.25
+FROM golang:1.25-alpine3.22
+
+ARG SERVER_DIR=cmd/smoke-test/smoke-test.go
 
 # Set destination for COPY
 WORKDIR /app
@@ -9,10 +11,10 @@ RUN go mod download
 
 # Copy the source code. Note the slash at the end, as explained in
 # https://docs.docker.com/reference/dockerfile/#copy
-COPY *.go ./
+COPY . .
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server
+RUN CGO_ENABLED=0 GOOS=linux go build -o /server ${SERVER_DIR}
 
 # Optional:
 # To bind to a TCP port, runtime parameters must be supplied to the docker command.

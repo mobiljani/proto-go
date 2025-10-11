@@ -48,11 +48,6 @@ func handleConnection(connection net.Conn) {
 	for {
 		bytesRead, err := connection.Read(buffer)
 
-		if err.Error() == "EOF" {
-			fmt.Printf("EOF received %s\n", connection.RemoteAddr().String())
-			continue
-		}
-
 		if err != nil {
 			fmt.Printf("Error during read: %v\n", err)
 			break

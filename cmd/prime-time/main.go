@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -44,20 +45,15 @@ func handleConnection(connection net.Conn) {
 
 	fmt.Printf("Client connected: %s\n", connection.RemoteAddr().String())
 
-	buffer := make([]byte, 4*1024)
-	for {
-		bytesRead, err := connection.Read(buffer)
+	scanner := bufio.NewScanner(connection)
+	for scanner.Scan() {
+		bytes := scanner.Bytes()
 
-		if err != nil {
-			fmt.Printf("Error during read: %v\n", err)
-			break
-		}
-
-		fmt.Printf("Message: %s\n", string(buffer[0:bytesRead]))
+		fmt.Printf("Message: %s\n", string(bytes))
 
 		req := request{}
 
-		jsonError := json.Unmarshal(buffer[0:bytesRead], &req)
+		jsonError := json.Unmarshal(bytes, &req)
 
 		if jsonError != nil {
 			fmt.Printf("Error during JSON unmarshal: %v\n", jsonError)

@@ -55,25 +55,12 @@ func handleConnection(connection net.Conn) {
 
 		jsonError := json.Unmarshal(bytes, &req)
 
-		if jsonError != nil {
-			fmt.Printf("Error during JSON unmarshal: %v\n", jsonError)
-			connection.Write([]byte(string("meh")))
+		if jsonError != nil || req.Method != "isPrime" {
+			connection.Write([]byte("meh"))
 			break
 		}
 
-		if req.Method != "isPrime" {
-			fmt.Printf("Unknown method: %s\n", req.Method)
-			connection.Write([]byte(string("meh")))
-			break
-		}
-
-		res := response{}
-
-		res.Method = "isPrime"
-		res.Prime = isPrime(req.Number)
-
-		s, _ := json.Marshal(res)
-
+		s, _ := json.Marshal(response{Method: "isPrime", Prime: isPrime(req.Number)})
 		connection.Write([]byte(string(s) + "\n"))
 		fmt.Printf("Response: %s\n", string(s))
 	}

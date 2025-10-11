@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"strconv"
 )
 
 func main() {
@@ -69,6 +70,20 @@ func handleConnection(connection net.Conn) {
 
 		if string(bytes[0:1]) == "Q" {
 			connection.Write([]byte("todo"))
+			from := binary.BigEndian.Uint32(bytes[1:5])
+			to := binary.BigEndian.Uint32(bytes[5:9])
+			var count, total int
+			for _, item := range list {
+				if item.time >= from && item.time <= to {
+					count = count + 1
+					total = total + int(item.price)
+				}
+			}
+			if count == 0 {
+				connection.Write([]byte(strconv.Itoa(0)))
+				continue
+			}
+			connection.Write([]byte(strconv.Itoa(total / count)))
 		}
 
 	}

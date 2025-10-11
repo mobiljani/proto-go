@@ -10,7 +10,7 @@ import (
 
 type request struct {
 	Method string `json:"method"`
-	Number int    `json:"number"`
+	Number *int   `json:"number"`
 }
 
 type response struct {
@@ -55,12 +55,12 @@ func handleConnection(connection net.Conn) {
 
 		jsonError := json.Unmarshal(bytes, &req)
 
-		if jsonError != nil || req.Method != "isPrime" || req.Number == 0 {
+		if jsonError != nil || req.Method != "isPrime" || req.Number == nil {
 			connection.Write([]byte("meh"))
 			break
 		}
 
-		s, _ := json.Marshal(response{Method: "isPrime", Prime: isPrime(req.Number)})
+		s, _ := json.Marshal(response{Method: "isPrime", Prime: isPrime(*req.Number)})
 		connection.Write([]byte(string(s) + "\n"))
 		fmt.Printf("Response: %s\n", string(s))
 	}

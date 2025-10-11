@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/binary"
 	"fmt"
 	"net"
 )
@@ -40,7 +41,7 @@ func handleConnection(connection net.Conn) {
 
 		// https://pkg.go.dev/fmt
 
-		fmt.Printf("Message: %o - %o : %o  String %s \n", bytes[0:1], bytes[1:5], bytes[5:9], bytes)
+		fmt.Printf("Message: %o - %o : %o  String %s Human %s %d %d \n", bytes[0:1], bytes[1:5], bytes[5:9], bytes, string(bytes[0:1]), binary.BigEndian.Uint32(bytes[1:5]), binary.BigEndian.Uint32(bytes[5:9]))
 
 	}
 

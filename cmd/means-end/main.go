@@ -38,14 +38,16 @@ func handleConnection(connection net.Conn) {
 	for scanner.Scan() {
 		bytes := scanner.Bytes()
 
-		fmt.Printf("Message: %o\n", bytes)
+		fmt.Printf("%s Message: %d - %d : %d   \n", connection.RemoteAddr().String(), bytes[0:1], bytes[1:5], bytes[5:9])
+		fmt.Printf("%s Message: %x - %x : %x   \n", connection.RemoteAddr().String(), bytes[0:1], bytes[1:5], bytes[5:9])
+		fmt.Printf("%s Message: %O - %O : %O   \n", connection.RemoteAddr().String(), bytes[0:1], bytes[1:5], bytes[5:9])
 
 	}
 
 }
 
 func everyNineBytes(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if len(data) < 9 {
+	if len(data) < 9 || atEOF {
 		return 0, nil, nil
 	}
 

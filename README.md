@@ -46,11 +46,16 @@ docker run -p 8080:8080 proto/means-end
 ```
 
 ```bash
-echo '123456789101112' | nc 85.210.37.5 8080
+echo '490000303900000065' | nc 85.210.37.5 8080
 ```
 
 ```bash
-az container restart --name proto-means --resource-group proto
+az container restart --name means-end --resource-group proto
 ```
 
 
+Message: [121 0 0 60 0 0 0 100 0]
+Message: [111 0 0 240 0 0 0 0 5]
+Message: [111 0 0 60 73 0 0 0 144]
+Message: [111 0 0 60 72 0 0 0 146]
+Message: [111 0 0 60 71 0 0 0 145]

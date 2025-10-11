@@ -84,6 +84,7 @@ func handleConnection(connection net.Conn) {
 				continue
 			}
 			connection.Write([]byte(strconv.Itoa(total / count)))
+			fmt.Printf("Mean price is %d", total/count)
 		}
 
 	}

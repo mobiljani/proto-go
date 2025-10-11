@@ -61,11 +61,13 @@ func handleConnection(connection net.Conn) {
 
 		if jsonError != nil {
 			fmt.Printf("Error during JSON unmarshal: %v\n", jsonError)
+			connection.Write([]byte(string("meh")))
 			break
 		}
 
 		if req.Method != "isPrime" {
 			fmt.Printf("Unknown method: %s\n", req.Method)
+			connection.Write([]byte(string("meh")))
 			break
 		}
 

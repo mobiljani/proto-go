@@ -48,7 +48,7 @@ func handleConnection(connection net.Conn) {
 
 func everyNineBytes(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if len(data) < 9 || atEOF {
-		return 0, nil, nil
+		return 0, nil, bufio.ErrFinalToken
 	}
 
 	return 9, data[:9], nil

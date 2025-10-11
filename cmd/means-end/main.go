@@ -60,10 +60,15 @@ func handleConnection(connection net.Conn) {
 
 		fmt.Printf("Message: %o - %o : %o  String %s Human %s %d %d \n", bytes[0:1], bytes[1:5], bytes[5:9], string(bytes), string(bytes[0:1]), binary.BigEndian.Uint32(bytes[1:5]), binary.BigEndian.Uint32(bytes[5:9]))
 
-		if string(bytes) == "I" {
+		if string(bytes[0:1]) == "I" {
+			// TODO: Price can be negative
 			new := entry{time: binary.BigEndian.Uint32(bytes[1:5]), price: binary.BigEndian.Uint32(bytes[5:9])}
 			list = append(list, new)
 			fmt.Print(list)
+		}
+
+		if string(bytes[0:1]) == "Q" {
+			connection.Write([]byte("todo"))
 		}
 
 	}

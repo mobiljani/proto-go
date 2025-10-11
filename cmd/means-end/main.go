@@ -41,15 +41,19 @@ func handleConnection(connection net.Conn) {
 
 		// https://pkg.go.dev/fmt
 
-		fmt.Printf("Message: %o - %o : %o  String %s Human %s %d %d \n", bytes[0:1], bytes[1:5], bytes[5:9], bytes, string(bytes[0:1]), binary.BigEndian.Uint32(bytes[1:5]), binary.BigEndian.Uint32(bytes[5:9]))
+		fmt.Printf("Message: %o - %o : %o  String %s Human %s %d %d \n", bytes[0:1], bytes[1:5], bytes[5:9], string(bytes), string(bytes[0:1]), binary.BigEndian.Uint32(bytes[1:5]), binary.BigEndian.Uint32(bytes[5:9]))
 
 	}
 
 }
 
 func everyNineBytes(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if len(data) < 9 || atEOF {
+	if atEOF {
 		return 0, nil, bufio.ErrFinalToken
+	}
+
+	if len(data) < 9 {
+		return 0, nil, nil
 	}
 
 	return 9, data[:9], nil

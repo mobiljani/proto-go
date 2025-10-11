@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
-	"strconv"
 )
 
 func main() {
@@ -73,6 +72,7 @@ func handleConnection(connection net.Conn) {
 			from := binary.BigEndian.Uint32(bytes[1:5])
 			to := binary.BigEndian.Uint32(bytes[5:9])
 			var count, total int
+			bs := make([]byte, 4)
 			for _, item := range list {
 				if item.time >= from && item.time <= to {
 					count = count + 1
@@ -80,10 +80,12 @@ func handleConnection(connection net.Conn) {
 				}
 			}
 			if count == 0 {
-				connection.Write([]byte(strconv.Itoa(0)))
+				binary.LittleEndian.PutUint32(bs, 0)
+				connection.Write(bs)
 				continue
 			}
-			connection.Write([]byte(strconv.Itoa(total / count)))
+			binary.LittleEndian.PutUint32(bs, uint32(total/count))
+			connection.Write(bs)
 			fmt.Printf("Mean price is %d", total/count)
 		}
 

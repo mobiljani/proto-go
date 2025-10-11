@@ -38,9 +38,9 @@ func handleConnection(connection net.Conn) {
 	for scanner.Scan() {
 		bytes := scanner.Bytes()
 
-		fmt.Printf("%s Message: %d - %d : %d   \n", connection.RemoteAddr().String(), bytes[0:1], bytes[1:5], bytes[5:9])
-		fmt.Printf("%s Message: %x - %x : %x   \n", connection.RemoteAddr().String(), bytes[0:1], bytes[1:5], bytes[5:9])
-		fmt.Printf("%s Message: %O - %O : %O   \n", connection.RemoteAddr().String(), bytes[0:1], bytes[1:5], bytes[5:9])
+		// https://pkg.go.dev/fmt
+
+		fmt.Printf("%s Message: %o - %o : %o  String %s \n", connection.RemoteAddr().String(), bytes[0:1], bytes[1:5], bytes[5:9], bytes)
 
 	}
 

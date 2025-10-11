@@ -32,6 +32,13 @@ func main() {
 func handleConnection(connection net.Conn) {
 	defer connection.Close()
 
+	type entry struct {
+		time  uint32
+		price uint32
+	}
+
+	var list []entry
+
 	fmt.Printf("Client connected: %s\n", connection.RemoteAddr().String())
 
 	scanner := bufio.NewScanner(connection)
@@ -41,7 +48,23 @@ func handleConnection(connection net.Conn) {
 
 		// https://pkg.go.dev/fmt
 
+		/*
+
+			Message: [121] - [0 0 60 0] : [0 0 100 0] String Q0@ Human Q 12288 16384
+			Message: [111] - [0 0 240 0] : [0 0 0 5] String I� Human I 40960 5
+			Message: [111] - [0 0 60 73] : [0 0 0 144] String I0;d Human I 12347 100
+			Message: [111] - [0 0 60 72] : [0 0 0 146] String I0:f Human I 12346 102
+			Message: [111] - [0 0 60 71] : [0 0 0 145] String I09e Human I 12345 101
+
+		*/
+
 		fmt.Printf("Message: %o - %o : %o  String %s Human %s %d %d \n", bytes[0:1], bytes[1:5], bytes[5:9], string(bytes), string(bytes[0:1]), binary.BigEndian.Uint32(bytes[1:5]), binary.BigEndian.Uint32(bytes[5:9]))
+
+		if string(bytes) == "I" {
+			new := entry{time: binary.BigEndian.Uint32(bytes[1:5]), price: binary.BigEndian.Uint32(bytes[5:9])}
+			list = append(list, new)
+			fmt.Print(list)
+		}
 
 	}
 

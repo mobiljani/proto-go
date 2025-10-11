@@ -56,19 +56,23 @@ func handleConnection(connection net.Conn) {
 
 		jsonError := json.Unmarshal(bytes, &req)
 
-		if jsonError != nil || req.Method != "isPrime" || req.Number == nil || *req.Number != math.Trunc(*req.Number) {
+		if jsonError != nil || req.Method != "isPrime" || req.Number == nil {
 			connection.Write([]byte("meh"))
 			break
 		}
 
-		s, _ := json.Marshal(response{Method: "isPrime", Prime: isPrime(int64(*req.Number))})
+		s, _ := json.Marshal(response{Method: "isPrime", Prime: isPrime(*req.Number)})
 		connection.Write([]byte(string(s) + "\n"))
 		fmt.Printf("Response: %s\n", string(s))
 	}
 
 }
 
-func isPrime(num int64) bool {
-	nig := big.NewInt(num)
+func isPrime(num float64) bool {
+	if num != math.Trunc(num) {
+		return false
+	}
+
+	nig := big.NewInt(int64(num))
 	return nig.ProbablyPrime(0)
 }

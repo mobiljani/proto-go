@@ -55,7 +55,7 @@ func handleConnection(connection net.Conn) {
 
 		jsonError := json.Unmarshal(bytes, &req)
 
-		if jsonError != nil || req.Method != "isPrime" {
+		if jsonError != nil || req.Method != "isPrime" || req.Number == 0 {
 			connection.Write([]byte("meh"))
 			break
 		}

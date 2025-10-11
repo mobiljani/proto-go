@@ -38,7 +38,7 @@ az container restart --name proto-prime --resource-group proto
 
 ## Means to an end
 
-https://portal.azure.com/#@ASOS1.onmicrosoft.com/resource/subscriptions/78619d9f-ef51-4241-8268-bcdeced3747c/resourceGroups/proto/providers/Microsoft.ContainerInstance/containerGroups/proto-prime/overview
+https://portal.azure.com/#@ASOS1.onmicrosoft.com/resource/subscriptions/78619d9f-ef51-4241-8268-bcdeced3747c/resourceGroups/proto/providers/Microsoft.ContainerInstance/containerGroups/means-end/overview
 
 ```bash
 docker build --target runtime -t proto/means-end --build-arg SERVER_DIR=cmd/means-end/main.go .      
@@ -46,7 +46,7 @@ docker run -p 8080:8080 proto/means-end
 ```
 
 ```bash
-echo '123456789101112' | nc localhost 8080
+echo '123456789101112' | nc 85.210.37.5 8080
 ```
 
 ```bash

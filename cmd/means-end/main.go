@@ -38,7 +38,7 @@ func handleConnection(connection net.Conn) {
 	for scanner.Scan() {
 		bytes := scanner.Bytes()
 
-		fmt.Printf("Message: %s\n", string(bytes))
+		fmt.Printf("Message: %o\n", bytes)
 
 	}
 

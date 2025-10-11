@@ -77,6 +77,7 @@ func handleConnection(connection net.Conn) {
 		s, _ := json.Marshal(res)
 
 		connection.Write([]byte(string(s)))
+		fmt.Printf("Response: %s\n", string(s))
 	}
 
 }

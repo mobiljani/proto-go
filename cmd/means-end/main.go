@@ -80,11 +80,11 @@ func handleConnection(connection net.Conn) {
 				}
 			}
 			if count == 0 {
-				binary.LittleEndian.PutUint32(bs, 0)
+				binary.BigEndian.PutUint32(bs, 0)
 				connection.Write(bs)
 				continue
 			}
-			binary.LittleEndian.PutUint32(bs, uint32(total/count))
+			binary.BigEndian.PutUint32(bs, uint32(total/count))
 			connection.Write(bs)
 			fmt.Printf("Mean price is %d", total/count)
 		}

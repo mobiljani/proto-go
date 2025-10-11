@@ -40,7 +40,7 @@ func handleConnection(connection net.Conn) {
 
 		// https://pkg.go.dev/fmt
 
-		fmt.Printf("%s Message: %o - %o : %o  String %s \n", connection.RemoteAddr().String(), bytes[0:1], bytes[1:5], bytes[5:9], bytes)
+		fmt.Printf("Message: %o - %o : %o  String %s \n", bytes[0:1], bytes[1:5], bytes[5:9], bytes)
 
 	}
 

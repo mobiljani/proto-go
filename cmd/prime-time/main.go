@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/big"
 	"net"
 )
 
 type request struct {
-	Method string `json:"method"`
-	Number *int   `json:"number"`
+	Method string   `json:"method"`
+	Number *float64 `json:"number"`
 }
 
 type response struct {
@@ -55,19 +56,19 @@ func handleConnection(connection net.Conn) {
 
 		jsonError := json.Unmarshal(bytes, &req)
 
-		if jsonError != nil || req.Method != "isPrime" || req.Number == nil {
+		if jsonError != nil || req.Method != "isPrime" || req.Number == nil || *req.Number != math.Trunc(*req.Number) {
 			connection.Write([]byte("meh"))
 			break
 		}
 
-		s, _ := json.Marshal(response{Method: "isPrime", Prime: isPrime(*req.Number)})
+		s, _ := json.Marshal(response{Method: "isPrime", Prime: isPrime(int64(*req.Number))})
 		connection.Write([]byte(string(s) + "\n"))
 		fmt.Printf("Response: %s\n", string(s))
 	}
 
 }
 
-func isPrime(num int) bool {
-	nig := big.NewInt(int64(num))
+func isPrime(num int64) bool {
+	nig := big.NewInt(num)
 	return nig.ProbablyPrime(0)
 }

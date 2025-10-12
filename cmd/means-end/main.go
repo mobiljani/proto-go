@@ -62,7 +62,6 @@ func handleConnection(connection net.Conn) {
 		}
 
 		if string(rb[0]) == "Q" {
-			//[4intoverflow.test] FAIL:Q -2100000000 210000000: expected 2050000000 (6150000000/3), got 0
 
 			var count, mean int32
 			var total int64
@@ -81,14 +80,8 @@ func handleConnection(connection net.Conn) {
 			}
 
 			wb := new(bytes.Buffer)
-			rb := new(bytes.Buffer)
 			binary.Write(wb, binary.BigEndian, mean)
-			binary.Read(rb, binary.BigEndian, mean)
-
 			connection.Write(wb.Bytes())
-
-			fmt.Printf("%v -> %v \n", rb, wb.Bytes())
-
 		}
 
 	}

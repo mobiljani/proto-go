@@ -98,8 +98,10 @@ func handleConnection(connection net.Conn) {
 		messageSent.Emit(ctx, Message{user: name, msg: in[:1000]})
 	}
 
-	ctx := context.Background()
-	userLeft.Emit(ctx, name)
+	if name != "" {
+		ctx := context.Background()
+		userLeft.Emit(ctx, name)
+	}
 
 }
 

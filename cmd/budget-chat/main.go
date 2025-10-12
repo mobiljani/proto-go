@@ -78,13 +78,17 @@ func handleConnection(connection net.Conn) {
 			}
 
 			name = in
-			m := fmt.Sprintf("* The room contains: %s\n", strings.Join(names, ", "))
+
+			if len(names) > 0 {
+				m := fmt.Sprintf("* The room contains: %s\n", strings.Join(names, ", "))
+				connection.Write([]byte(m))
+			}
+
 			names = append(names, in)
 
 			ctx := context.Background()
 			userJoined.Emit(ctx, name)
 
-			connection.Write([]byte(m))
 			continue
 		}
 

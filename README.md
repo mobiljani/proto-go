@@ -54,8 +54,16 @@ az container restart --name means-end --resource-group proto
 ```
 
 
-Message: [121 0 0 60 0 0 0 100 0]
-Message: [111 0 0 240 0 0 0 0 5]
-Message: [111 0 0 60 73 0 0 0 144]
-Message: [111 0 0 60 72 0 0 0 146]
-Message: [111 0 0 60 71 0 0 0 145]
+
+
+## Budget Chat
+
+https://portal.azure.com/#@ASOS1.onmicrosoft.com/resource/subscriptions/78619d9f-ef51-4241-8268-bcdeced3747c/resourceGroups/proto/providers/Microsoft.ContainerInstance/containerGroups/budget-chat/overview
+
+```bash
+echo '490000303900000065' | nc 4.158.171.221 8080
+```
+
+```bash
+az container restart --name budget-chat --resource-group proto
+```

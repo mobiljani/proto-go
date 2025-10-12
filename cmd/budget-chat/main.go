@@ -58,8 +58,10 @@ func handleConnection(connection net.Conn) {
 	})
 
 	messageSent.AddListener(func(ctx context.Context, message message) {
-		m := fmt.Sprintf("[%s] %s\n", message.user, message.msg)
-		connection.Write([]byte(m))
+		if name != "" && name != message.user {
+			m := fmt.Sprintf("[%s] %s\n", message.user, message.msg)
+			connection.Write([]byte(m))
+		}
 	})
 
 	fmt.Printf("Client connected: %s\n", connection.RemoteAddr().String())

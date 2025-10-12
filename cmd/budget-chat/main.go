@@ -29,29 +29,33 @@ func main() {
 }
 
 func handleConnection(connection net.Conn) {
+	var name string
+
 	defer connection.Close()
 
 	fmt.Printf("Client connected: %s\n", connection.RemoteAddr().String())
-
-	var name string
-
 	connection.Write([]byte("Welcome to budgetchat! What shall I call you?\n"))
-
 	scanner := bufio.NewScanner(connection)
+
 	for scanner.Scan() {
 		rb := scanner.Bytes()
 		in := string(rb)
 		fmt.Printf("Received: %s \n", rb)
 
 		if name == "" {
+			if !validateName(in) {
+				connection.Write([]byte("Name must be between 1 and 16 characters\n"))
+				break
+			}
 			name = in
 			continue
 		}
 
 		m := fmt.Sprintf("[%s] %s\n", name, in)
-
 		connection.Write([]byte(m))
-
 	}
+}
 
+func validateName(name string) bool {
+	return len(name) >= 1 && len(name) <= 16
 }

@@ -97,7 +97,7 @@ func everyNineBytes(data []byte, atEOF bool) (advance int, token []byte, err err
 	}
 
 	if len(data) < 9 {
-		return 0, nil, bufio.ErrBadReadCount
+		return 0, nil, nil
 	}
 
 	return 9, data[:9], nil

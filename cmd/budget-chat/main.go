@@ -95,7 +95,7 @@ func handleConnection(connection net.Conn) {
 		}
 
 		ctx := context.Background()
-		messageSent.Emit(ctx, Message{user: name, msg: in[:1000]})
+		messageSent.Emit(ctx, Message{user: name, msg: in})
 	}
 
 	if name != "" {

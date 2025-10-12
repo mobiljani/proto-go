@@ -44,7 +44,7 @@ func handleConnection(connection net.Conn) {
 	scanner := bufio.NewScanner(connection)
 	scanner.Split(everyNineBytes)
 	for scanner.Scan() {
-		bytes := scanner.Bytes()
+		in := scanner.Bytes()
 
 		// https://pkg.go.dev/fmt
 
@@ -58,21 +58,21 @@ func handleConnection(connection net.Conn) {
 
 		*/
 
-		fmt.Printf("Message: %o - %o : %o  String %s Human %s %d %d \n", bytes[0:1], bytes[1:5], bytes[5:9], string(bytes), string(bytes[0:1]), binary.BigEndian.Uint32(bytes[1:5]), binary.BigEndian.Uint32(bytes[5:9]))
+		fmt.Printf("Message: %v - %v : %v  String %s Human %s %d %d \n", in[0:1], in[1:5], in[5:9], string(in), string(in[0:1]), binary.BigEndian.Uint32(in[1:5]), binary.BigEndian.Uint32(in[5:9]))
 
-		if string(bytes[0:1]) == "I" {
+		if string(in[0]) == "I" {
 			// TODO: Price can be negative
-			new := entry{time: binary.BigEndian.Uint32(bytes[1:5]), price: binary.BigEndian.Uint32(bytes[5:9])}
+			new := entry{time: binary.BigEndian.Uint32(in[1:5]), price: binary.BigEndian.Uint32(in[5:9])}
 			list = append(list, new)
 			fmt.Print(list)
 		}
 
-		if string(bytes[0:1]) == "Q" {
+		if string(in[0]) == "Q" {
 			connection.Write([]byte("todo"))
-			from := binary.BigEndian.Uint32(bytes[1:5])
-			to := binary.BigEndian.Uint32(bytes[5:9])
-			var count, total int
-			bs := make([]byte, 4)
+			from := binary.BigEndian.Uint32(in[1:5])
+			to := binary.BigEndian.Uint32(in[5:9])
+			var count, total, mean int
+			out := make([]byte, 4)
 			for _, item := range list {
 				if item.time >= from && item.time <= to {
 					count = count + 1
@@ -80,13 +80,16 @@ func handleConnection(connection net.Conn) {
 				}
 			}
 			if count == 0 {
-				binary.BigEndian.PutUint32(bs, 0)
-				connection.Write(bs)
+				binary.BigEndian.PutUint32(out, 0)
+				connection.Write(out)
 				continue
 			}
-			binary.BigEndian.PutUint32(bs, uint32(total/count))
-			connection.Write(bs)
-			fmt.Printf("Mean price is %d - %o", total/count, bs)
+
+			mean = total / count
+
+			binary.BigEndian.PutUint32(out, uint32(mean))
+			connection.Write(out)
+			fmt.Printf("Mean price is %d - %v\n", mean, out)
 		}
 
 	}

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
+	"math/big"
 	"net"
 )
 
@@ -33,8 +34,8 @@ func handleConnection(connection net.Conn) {
 	defer connection.Close()
 
 	type entry struct {
-		time  uint32
-		price uint32
+		time  int
+		price int
 	}
 
 	var list []entry
@@ -46,29 +47,35 @@ func handleConnection(connection net.Conn) {
 	for scanner.Scan() {
 		rb := scanner.Bytes()
 
+		first := new(big.Int)
+		second := new(big.Int)
+
+		first.SetBytes(rb[1:5])
+		second.SetBytes(rb[5:9])
+
 		//fmt.Printf("Message: %v - %v : %v  String %s Human %s %d %d \n", rb[0:1], rb[1:5], rb[5:9], string(rb), string(rb[0:1]), binary.BigEndian.Uint32(rb[1:5]), binary.BigEndian.Uint32(rb[5:9]))
 
 		if string(rb[0]) == "I" {
 			// TODO: Price can be negative
-			new := entry{time: binary.BigEndian.Uint32(rb[1:5]), price: binary.BigEndian.Uint32(rb[5:9])}
+			new := entry{time: int(first.Int64()), price: int(second.Int64())}
 			list = append(list, new)
 		}
 
 		if string(rb[0]) == "Q" {
 			//[4intoverflow.test] FAIL:Q -2100000000 210000000: expected 2050000000 (6150000000/3), got 0
-			from := binary.BigEndian.Uint32(rb[1:5])
-			to := binary.BigEndian.Uint32(rb[5:9])
-			var count, total, mean uint32
+
+			var count, mean int
+			var total uint64
 
 			for _, item := range list {
-				if item.time >= from && item.time <= to {
+				if item.time >= int(first.Int64()) && item.time <= int(second.Int64()) {
 					count = count + 1
-					total = total + item.price
+					total += uint64(item.price)
 				}
 			}
 
 			if count > 0 {
-				mean = total / count
+				mean = int(total / uint64(count))
 			}
 
 			wb := make([]byte, 4)

@@ -2,9 +2,23 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
+	"strings"
+
+	"github.com/maniartech/signals"
 )
+
+type message struct {
+	user string
+	msg  string
+}
+
+var userJoined = signals.New[string]()
+var userLeft = signals.New[string]()
+var messageSent = signals.New[message]()
+var names []string
 
 func main() {
 	port := 8080
@@ -33,6 +47,21 @@ func handleConnection(connection net.Conn) {
 
 	defer connection.Close()
 
+	userJoined.AddListener(func(ctx context.Context, user string) {
+		m := fmt.Sprintf("* %s has entered the room\n", user)
+		connection.Write([]byte(m))
+	})
+
+	userLeft.AddListener(func(ctx context.Context, user string) {
+		m := fmt.Sprintf("* %s has left the room\n", user)
+		connection.Write([]byte(m))
+	})
+
+	messageSent.AddListener(func(ctx context.Context, message message) {
+		m := fmt.Sprintf("[%s] %s\n", message.user, message.msg)
+		connection.Write([]byte(m))
+	})
+
 	fmt.Printf("Client connected: %s\n", connection.RemoteAddr().String())
 	connection.Write([]byte("Welcome to budgetchat! What shall I call you?\n"))
 	scanner := bufio.NewScanner(connection)
@@ -47,13 +76,25 @@ func handleConnection(connection net.Conn) {
 				connection.Write([]byte("Name must be between 1 and 16 characters\n"))
 				break
 			}
+
 			name = in
+			m := fmt.Sprintf("* The room contains: %s\n", strings.Join(names, ", "))
+			names = append(names, in)
+
+			ctx := context.Background()
+			userJoined.Emit(ctx, name)
+
+			connection.Write([]byte(m))
 			continue
 		}
 
-		m := fmt.Sprintf("[%s] %s\n", name, in)
-		connection.Write([]byte(m))
+		ctx := context.Background()
+		messageSent.Emit(ctx, message{user: name, msg: in})
 	}
+
+	ctx := context.Background()
+	userLeft.Emit(ctx, name)
+
 }
 
 func validateName(name string) bool {

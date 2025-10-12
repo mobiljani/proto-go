@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"math/big"
@@ -63,7 +64,7 @@ func handleConnection(connection net.Conn) {
 		if string(rb[0]) == "Q" {
 			//[4intoverflow.test] FAIL:Q -2100000000 210000000: expected 2050000000 (6150000000/3), got 0
 
-			var count, mean int
+			var count, mean int32
 			var total int64
 
 			fmt.Printf("Query from %d to %d ", int(first.Int64()), int(second.Int64()))
@@ -76,13 +77,13 @@ func handleConnection(connection net.Conn) {
 			}
 
 			if count > 0 {
-				mean = int(total / int64(count))
+				mean = int32(total / int64(count))
 			}
 
-			wb := make([]byte, 4)
+			wb := new(bytes.Buffer)
+			binary.Write(wb, binary.BigEndian, mean)
 
-			binary.BigEndian.PutUint32(wb, uint32(mean))
-			connection.Write(wb)
+			connection.Write(wb.Bytes())
 
 			fmt.Printf("%v -> %v \n", rb, wb)
 

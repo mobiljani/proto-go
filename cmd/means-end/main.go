@@ -56,7 +56,6 @@ func handleConnection(connection net.Conn) {
 		//fmt.Printf("Message: %v - %v : %v  String %s Human %s %d %d \n", rb[0:1], rb[1:5], rb[5:9], string(rb), string(rb[0:1]), binary.BigEndian.Uint32(rb[1:5]), binary.BigEndian.Uint32(rb[5:9]))
 
 		if string(rb[0]) == "I" {
-			// TODO: Price can be negative
 			new := entry{time: int(first.Int64()), price: int(second.Int64())}
 			list = append(list, new)
 		}
@@ -66,6 +65,8 @@ func handleConnection(connection net.Conn) {
 
 			var count, mean int
 			var total uint64
+
+			fmt.Printf("Query from %d to %d ", int(first.Int64()), int(second.Int64()))
 
 			for _, item := range list {
 				if item.time >= int(first.Int64()) && item.time <= int(second.Int64()) {

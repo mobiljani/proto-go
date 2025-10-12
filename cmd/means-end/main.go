@@ -83,7 +83,7 @@ func handleConnection(connection net.Conn) {
 			binary.BigEndian.PutUint32(wb, uint32(mean))
 			connection.Write(wb)
 
-			fmt.Printf("Mean price is %d - %v\n", mean, wb)
+			fmt.Printf("%v -> %v \n", rb, wb)
 
 		}
 

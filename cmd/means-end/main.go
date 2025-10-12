@@ -52,18 +52,18 @@ func handleConnection(connection net.Conn) {
 			// TODO: Price can be negative
 			new := entry{time: binary.BigEndian.Uint32(rb[1:5]), price: binary.BigEndian.Uint32(rb[5:9])}
 			list = append(list, new)
-			//fmt.Print(list)
 		}
 
 		if string(rb[0]) == "Q" {
+			//[4intoverflow.test] FAIL:Q -2100000000 210000000: expected 2050000000 (6150000000/3), got 0
 			from := binary.BigEndian.Uint32(rb[1:5])
 			to := binary.BigEndian.Uint32(rb[5:9])
-			var count, total, mean int
+			var count, total, mean uint32
 
 			for _, item := range list {
 				if item.time >= from && item.time <= to {
 					count = count + 1
-					total = total + int(item.price)
+					total = total + item.price
 				}
 			}
 
@@ -77,6 +77,7 @@ func handleConnection(connection net.Conn) {
 			connection.Write(wb)
 
 			fmt.Printf("Mean price is %d - %v\n", mean, wb)
+
 		}
 
 	}
@@ -89,7 +90,7 @@ func everyNineBytes(data []byte, atEOF bool) (advance int, token []byte, err err
 	}
 
 	if len(data) < 9 {
-		return 0, nil, nil
+		return 0, nil, bufio.ErrBadReadCount
 	}
 
 	return 9, data[:9], nil

@@ -35,8 +35,8 @@ func handleConnection(connection net.Conn) {
 	defer connection.Close()
 
 	type entry struct {
-		time  int
-		price int
+		time  int32
+		price int32
 	}
 
 	var list []entry
@@ -57,7 +57,7 @@ func handleConnection(connection net.Conn) {
 		//fmt.Printf("Message: %v - %v : %v  String %s Human %s %d %d \n", rb[0:1], rb[1:5], rb[5:9], string(rb), string(rb[0:1]), binary.BigEndian.Uint32(rb[1:5]), binary.BigEndian.Uint32(rb[5:9]))
 
 		if string(rb[0]) == "I" {
-			new := entry{time: int(first.Int64()), price: int(second.Int64())}
+			new := entry{time: int32(first.Int64()), price: int32(second.Int64())}
 			list = append(list, new)
 		}
 
@@ -67,10 +67,10 @@ func handleConnection(connection net.Conn) {
 			var count, mean int32
 			var total int64
 
-			fmt.Printf("Query from %d to %d ", int(first.Int64()), int(second.Int64()))
+			fmt.Printf("Query from %d to %d |", int(first.Int64()), int(second.Int64()))
 
 			for _, item := range list {
-				if item.time >= int(first.Int64()) && item.time <= int(second.Int64()) {
+				if item.time >= int32(first.Int64()) && item.time <= int32(second.Int64()) {
 					count = count + 1
 					total += int64(item.price)
 				}
@@ -81,11 +81,13 @@ func handleConnection(connection net.Conn) {
 			}
 
 			wb := new(bytes.Buffer)
+			rb := new(bytes.Buffer)
 			binary.Write(wb, binary.BigEndian, mean)
+			binary.Read(rb, binary.BigEndian, mean)
 
 			connection.Write(wb.Bytes())
 
-			fmt.Printf("%v -> %v \n", rb, wb)
+			fmt.Printf("%v -> %v \n", rb, wb.Bytes())
 
 		}
 

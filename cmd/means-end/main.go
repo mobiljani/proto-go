@@ -64,19 +64,19 @@ func handleConnection(connection net.Conn) {
 			//[4intoverflow.test] FAIL:Q -2100000000 210000000: expected 2050000000 (6150000000/3), got 0
 
 			var count, mean int
-			var total uint64
+			var total int64
 
 			fmt.Printf("Query from %d to %d ", int(first.Int64()), int(second.Int64()))
 
 			for _, item := range list {
 				if item.time >= int(first.Int64()) && item.time <= int(second.Int64()) {
 					count = count + 1
-					total += uint64(item.price)
+					total += int64(item.price)
 				}
 			}
 
 			if count > 0 {
-				mean = int(total / uint64(count))
+				mean = int(total / int64(count))
 			}
 
 			wb := make([]byte, 4)

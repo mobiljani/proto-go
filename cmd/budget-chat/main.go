@@ -35,6 +35,10 @@ func handleConnection(connection net.Conn) {
 
 	var name string
 	var nameAsked bool
+
+	connection.Write([]byte("Welcome to budgetchat! What shall I call you?"))
+	nameAsked = true
+
 	scanner := bufio.NewScanner(connection)
 	for scanner.Scan() {
 		rb := scanner.Bytes()
@@ -43,12 +47,6 @@ func handleConnection(connection net.Conn) {
 
 		if nameAsked && name == "" {
 			name = in
-			continue
-		}
-
-		if name == "" {
-			connection.Write([]byte("Welcome to budgetchat! What shall I call you?"))
-			nameAsked = true
 			continue
 		}
 

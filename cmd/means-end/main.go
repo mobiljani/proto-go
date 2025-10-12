@@ -44,32 +44,20 @@ func handleConnection(connection net.Conn) {
 	scanner := bufio.NewScanner(connection)
 	scanner.Split(everyNineBytes)
 	for scanner.Scan() {
-		in := scanner.Bytes()
+		rb := scanner.Bytes()
 
-		// https://pkg.go.dev/fmt
+		//fmt.Printf("Message: %v - %v : %v  String %s Human %s %d %d \n", rb[0:1], rb[1:5], rb[5:9], string(rb), string(rb[0:1]), binary.BigEndian.Uint32(rb[1:5]), binary.BigEndian.Uint32(rb[5:9]))
 
-		/*
-
-			Message: [121] - [0 0 60 0] : [0 0 100 0] String Q0@ Human Q 12288 16384
-			Message: [111] - [0 0 240 0] : [0 0 0 5] String I� Human I 40960 5
-			Message: [111] - [0 0 60 73] : [0 0 0 144] String I0;d Human I 12347 100
-			Message: [111] - [0 0 60 72] : [0 0 0 146] String I0:f Human I 12346 102
-			Message: [111] - [0 0 60 71] : [0 0 0 145] String I09e Human I 12345 101
-
-		*/
-
-		fmt.Printf("Message: %v - %v : %v  String %s Human %s %d %d \n", in[0:1], in[1:5], in[5:9], string(in), string(in[0:1]), binary.BigEndian.Uint32(in[1:5]), binary.BigEndian.Uint32(in[5:9]))
-
-		if string(in[0]) == "I" {
+		if string(rb[0]) == "I" {
 			// TODO: Price can be negative
-			new := entry{time: binary.BigEndian.Uint32(in[1:5]), price: binary.BigEndian.Uint32(in[5:9])}
+			new := entry{time: binary.BigEndian.Uint32(rb[1:5]), price: binary.BigEndian.Uint32(rb[5:9])}
 			list = append(list, new)
-			fmt.Print(list)
+			//fmt.Print(list)
 		}
 
-		if string(in[0]) == "Q" {
-			from := binary.BigEndian.Uint32(in[1:5])
-			to := binary.BigEndian.Uint32(in[5:9])
+		if string(rb[0]) == "Q" {
+			from := binary.BigEndian.Uint32(rb[1:5])
+			to := binary.BigEndian.Uint32(rb[5:9])
 			var count, total, mean int
 
 			for _, item := range list {
@@ -83,12 +71,12 @@ func handleConnection(connection net.Conn) {
 				mean = total / count
 			}
 
-			out := make([]byte, 4)
+			wb := make([]byte, 4)
 
-			binary.BigEndian.PutUint32(out, uint32(mean))
-			connection.Write(out)
+			binary.BigEndian.PutUint32(wb, uint32(mean))
+			connection.Write(wb)
 
-			fmt.Printf("Mean price is %d - %v\n", mean, out)
+			fmt.Printf("Mean price is %d - %v\n", mean, wb)
 		}
 
 	}

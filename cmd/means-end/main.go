@@ -68,27 +68,26 @@ func handleConnection(connection net.Conn) {
 		}
 
 		if string(in[0]) == "Q" {
-			connection.Write([]byte("todo"))
 			from := binary.BigEndian.Uint32(in[1:5])
 			to := binary.BigEndian.Uint32(in[5:9])
 			var count, total, mean int
-			out := make([]byte, 4)
+
 			for _, item := range list {
 				if item.time >= from && item.time <= to {
 					count = count + 1
 					total = total + int(item.price)
 				}
 			}
-			if count == 0 {
-				binary.BigEndian.PutUint32(out, 0)
-				connection.Write(out)
-				continue
+
+			if count > 0 {
+				mean = total / count
 			}
 
-			mean = total / count
+			out := make([]byte, 4)
 
 			binary.BigEndian.PutUint32(out, uint32(mean))
 			connection.Write(out)
+
 			fmt.Printf("Mean price is %d - %v\n", mean, out)
 		}
 

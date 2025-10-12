@@ -34,10 +34,8 @@ func handleConnection(connection net.Conn) {
 	fmt.Printf("Client connected: %s\n", connection.RemoteAddr().String())
 
 	var name string
-	var nameAsked bool
 
-	connection.Write([]byte("Welcome to budgetchat! What shall I call you?"))
-	nameAsked = true
+	connection.Write([]byte("Welcome to budgetchat! What shall I call you?\n"))
 
 	scanner := bufio.NewScanner(connection)
 	for scanner.Scan() {
@@ -45,7 +43,7 @@ func handleConnection(connection net.Conn) {
 		in := string(rb)
 		fmt.Printf("Received: %s \n", rb)
 
-		if nameAsked && name == "" {
+		if name == "" {
 			name = in
 			continue
 		}

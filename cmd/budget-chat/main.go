@@ -10,14 +10,14 @@ import (
 	"github.com/maniartech/signals"
 )
 
-type message struct {
+type Message struct {
 	user string
 	msg  string
 }
 
 var userJoined = signals.New[string]()
 var userLeft = signals.New[string]()
-var messageSent = signals.New[message]()
+var messageSent = signals.New[Message]()
 var names []string
 
 func main() {
@@ -57,7 +57,7 @@ func handleConnection(connection net.Conn) {
 		connection.Write([]byte(m))
 	})
 
-	messageSent.AddListener(func(ctx context.Context, message message) {
+	messageSent.AddListener(func(ctx context.Context, message Message) {
 		if name != "" && name != message.user {
 			m := fmt.Sprintf("[%s] %s\n", message.user, message.msg)
 			connection.Write([]byte(m))
@@ -95,7 +95,7 @@ func handleConnection(connection net.Conn) {
 		}
 
 		ctx := context.Background()
-		messageSent.Emit(ctx, message{user: name, msg: in})
+		messageSent.Emit(ctx, Message{user: name, msg: in[:1000]})
 	}
 
 	ctx := context.Background()

@@ -62,7 +62,6 @@ func main() {
 		} else if strings.Contains(in, "=") {
 			key := strings.Split(in, "=")[0]
 			value := strings.Replace(in, key+"=", "", 1)
-			fmt.Printf("kv: %s - %s", key, value)
 			store.add(key, value)
 		} else {
 			m := fmt.Sprintf("%s=%s", in, store.get(in))

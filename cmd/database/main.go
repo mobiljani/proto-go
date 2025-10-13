@@ -57,9 +57,7 @@ func main() {
 
 		fmt.Printf("Received '%s'\n", in)
 
-		if in == "" {
-			continue
-		} else if strings.Contains(in, "version") {
+		if strings.Contains(in, "version") {
 			conn.WriteToUDP([]byte("version=Ken's Key-Value Store 1.0"), addr)
 		} else if strings.Contains(in, "=") {
 			key := strings.Split(in, "=")[0]

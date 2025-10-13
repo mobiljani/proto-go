@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 
 	"github.com/maniartech/signals"
 )
@@ -15,10 +16,33 @@ type Message struct {
 	msg  string
 }
 
+type Names struct {
+	mu      sync.Mutex
+	entries []string
+}
+
+var names = Names{entries: []string{}}
+
+func (n *Names) add(name string) {
+	n.mu.Lock()
+	n.entries = append(n.entries, name)
+	n.mu.Unlock()
+}
+
+func (n *Names) remove(name string) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	for i, v := range n.entries {
+		if v == name {
+			n.entries = append(n.entries[:i], n.entries[i+1:]...)
+			break
+		}
+	}
+}
+
 var userJoined = signals.New[string]()
 var userLeft = signals.New[string]()
 var messageSent = signals.New[Message]()
-var names []string
 
 func main() {
 	port := 8080
@@ -81,12 +105,12 @@ func handleConnection(connection net.Conn) {
 
 			name = in
 
-			if len(names) > 0 {
-				m := fmt.Sprintf("* The room contains: %s\n", strings.Join(names, ", "))
+			if len(names.entries) > 0 {
+				m := fmt.Sprintf("* The room contains: %s\n", strings.Join(names.entries, ", "))
 				connection.Write([]byte(m))
 			}
 
-			names = append(names, in)
+			names.add(name)
 
 			ctx := context.Background()
 			userJoined.Emit(ctx, name)
@@ -100,6 +124,7 @@ func handleConnection(connection net.Conn) {
 
 	if name != "" {
 		ctx := context.Background()
+		names.remove(name)
 		userLeft.Emit(ctx, name)
 	}
 

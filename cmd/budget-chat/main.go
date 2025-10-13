@@ -72,15 +72,17 @@ func handleConnection(connection net.Conn) {
 	defer connection.Close()
 
 	userJoined.AddListener(func(ctx context.Context, user string) {
-		if name != user {
+		if name != "" && name != user {
 			m := fmt.Sprintf("* %s has entered the room\n", user)
 			connection.Write([]byte(m))
 		}
 	})
 
 	userLeft.AddListener(func(ctx context.Context, user string) {
-		m := fmt.Sprintf("* %s has left the room\n", user)
-		connection.Write([]byte(m))
+		if name != "" && name != user {
+			m := fmt.Sprintf("* %s has left the room\n", user)
+			connection.Write([]byte(m))
+		}
 	})
 
 	messageSent.AddListener(func(ctx context.Context, message Message) {

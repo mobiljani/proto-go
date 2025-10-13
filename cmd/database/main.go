@@ -8,7 +8,7 @@ import (
 )
 
 type Store struct {
-	mu sync.Mutex
+	mu sync.RWMutex
 	db map[string]string
 }
 
@@ -22,6 +22,8 @@ func (s *Store) add(key string, value string) {
 }
 
 func (s *Store) get(key string) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return s.db[key]
 }
 

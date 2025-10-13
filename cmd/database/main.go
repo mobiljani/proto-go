@@ -44,14 +44,14 @@ func main() {
 
 	// Read from UDP listener in endless loop
 	for {
-		var buf [512]byte
-		_, addr, err := conn.ReadFromUDP(buf[0:])
+		buf := make([]byte, 32*1024)
+		n, addr, err := conn.ReadFromUDP(buf[0:])
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		in := string(buf[0:])
+		in := string(buf[0:n])
 		in = strings.TrimSuffix(in, "\n")
 
 		fmt.Printf("Received '%s'\n", in)

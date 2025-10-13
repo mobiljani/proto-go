@@ -99,7 +99,11 @@ func handleConnection(connection net.Conn) {
 	for scanner.Scan() {
 		rb := scanner.Bytes()
 		in := string(rb)
-		fmt.Printf("Received: %s \n", rb)
+		fmt.Printf("Received: '%s' \n", rb)
+
+		if in == "" {
+			break
+		}
 
 		if name == "" {
 			if !validateName(in) {

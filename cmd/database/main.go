@@ -52,11 +52,12 @@ func main() {
 		}
 
 		in := string(buf[0:n])
-		in = strings.TrimSuffix(in, "\n")
 
 		fmt.Printf("Received '%s'\n", in)
 
-		if strings.Contains(in, "version") {
+		if in == "" {
+			continue
+		} else if strings.Contains(in, "version") {
 			conn.WriteToUDP([]byte("version=Ken's Key-Value Store 1.0"), addr)
 		} else if strings.Contains(in, "=") {
 			key := strings.Split(in, "=")[0]
@@ -66,7 +67,6 @@ func main() {
 		} else {
 			m := fmt.Sprintf("%s=%s", in, store.get(in))
 			conn.WriteToUDP([]byte(m), addr)
-
 			fmt.Printf("Sent '%s'\n", string(m))
 		}
 	}

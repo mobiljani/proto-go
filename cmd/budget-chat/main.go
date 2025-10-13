@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -137,5 +138,6 @@ func handleConnection(connection net.Conn) {
 }
 
 func validateName(name string) bool {
-	return len(name) >= 1 && len(name) <= 16
+	is_alphanumeric := regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(name)
+	return is_alphanumeric && len(name) >= 1 && len(name) <= 16
 }

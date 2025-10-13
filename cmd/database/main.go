@@ -4,13 +4,30 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 )
+
+type Store struct {
+	mu *sync.Mutex
+	db map[string]string
+}
+
+func (s *Store) add(key string, value string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.db[key] = value
+}
+
+func (s *Store) get(key string) string {
+	return s.db[key]
+}
 
 func main() {
 	// Resolve the string address to a UDP address
 	udpAddr, err := net.ResolveUDPAddr("udp", ":8080")
 
-	db := make(map[string]string)
+	store := Store{db: make(map[string]string)}
 
 	if err != nil {
 		fmt.Println(err)
@@ -39,17 +56,15 @@ func main() {
 
 		fmt.Printf("Received '%s'\n", in)
 
-		fmt.Println(db)
-
 		if strings.Contains(in, "version") {
 			conn.WriteToUDP([]byte("version=Ken's Key-Value Store 1.0"), addr)
 		} else if strings.Contains(in, "=") {
 			key := strings.Split(in, "=")[0]
 			value := strings.Replace(in, key+"=", "", 1)
 			fmt.Printf("kv: %s - %s", key, value)
-			db[key] = value
+			store.add(key, value)
 		} else {
-			m := fmt.Sprintf("%s=%s", in, db[in])
+			m := fmt.Sprintf("%s=%s", in, store.get(in))
 			conn.WriteToUDP([]byte(m), addr)
 
 			fmt.Printf("Sent '%s'\n", string(m))

@@ -25,8 +25,8 @@ var names = Names{entries: []string{}}
 
 func (n *Names) add(name string) {
 	n.mu.Lock()
+	defer n.mu.Unlock()
 	n.entries = append(n.entries, name)
-	n.mu.Unlock()
 }
 
 func (n *Names) remove(name string) {
@@ -103,18 +103,16 @@ func handleConnection(connection net.Conn) {
 				break
 			}
 
-			name = in
-
 			if len(names.entries) > 0 {
 				m := fmt.Sprintf("* The room contains: %s\n", strings.Join(names.entries, ", "))
 				connection.Write([]byte(m))
 			}
 
-			names.add(name)
-
+			name = in
 			ctx := context.Background()
 			userJoined.Emit(ctx, name)
 
+			names.add(name)
 			continue
 		}
 

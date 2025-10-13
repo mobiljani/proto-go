@@ -8,9 +8,11 @@ import (
 )
 
 type Store struct {
-	mu *sync.Mutex
+	mu sync.Mutex
 	db map[string]string
 }
+
+var store = Store{db: make(map[string]string)}
 
 func (s *Store) add(key string, value string) {
 	s.mu.Lock()
@@ -26,8 +28,6 @@ func (s *Store) get(key string) string {
 func main() {
 	// Resolve the string address to a UDP address
 	udpAddr, err := net.ResolveUDPAddr("udp", ":8080")
-
-	store := Store{db: make(map[string]string)}
 
 	if err != nil {
 		fmt.Println(err)

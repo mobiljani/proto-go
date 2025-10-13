@@ -45,8 +45,8 @@ func main() {
 	}
 
 	// Read from UDP listener in endless loop
+	buf := make([]byte, 32*1024)
 	for {
-		buf := make([]byte, 32*1024)
 		n, addr, err := conn.ReadFromUDP(buf[0:])
 		if err != nil {
 			fmt.Println(err)

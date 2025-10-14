@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/google/uuid"
 	"github.com/maniartech/signals"
 )
 
+type contextKey string
+
 var userMessaged = signals.New[string]()
 var serverMessaged = signals.New[string]()
+var key contextKey = "id"
 
 func main() {
 
@@ -21,6 +25,7 @@ func main() {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
+	cb := context.Background()
 
 	for {
 		conn, err := list.Accept()
@@ -30,20 +35,25 @@ func main() {
 			return
 		}
 
-		go handleUserConnection(conn)
+		ct := context.WithValue(cb, key, uuid.New().String())
+		ctx, cancel := context.WithCancel(ct)
+		go handleUserConnection(conn, ctx, cancel)
 
 	}
 }
 
-func handleUserConnection(connection net.Conn) {
+func handleUserConnection(connection net.Conn, ctx context.Context, cancel context.CancelFunc) {
 	defer connection.Close()
+	defer cancel()
 
-	serverMessaged.AddListener(func(ctx context.Context, msg string) {
-		fmt.Printf("Downstream msg to user: '%s'\n", msg)
-		_, err := connection.Write([]byte(msg))
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			return
+	serverMessaged.AddListener(func(c context.Context, msg string) {
+		if c.Value(key) == ctx.Value(key) {
+			fmt.Printf("Downstream msg to user: '%s'\n", msg)
+			_, err := connection.Write([]byte(msg + "\n"))
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				return
+			}
 		}
 	})
 
@@ -57,25 +67,33 @@ func handleUserConnection(connection net.Conn) {
 
 	scanner := bufio.NewScanner(connection)
 	fmt.Printf("Starting to read user messages\n")
-	go handleServerConnection(downstream)
+	go handleServerConnection(downstream, ctx, cancel)
 
 	for scanner.Scan() {
 		in := scanner.Text()
 		fmt.Printf("user: '%s'\n", in)
-		userMessaged.Emit(context.Background(), in)
+		userMessaged.Emit(ctx, in)
+
+		if err := ctx.Err(); err != nil {
+			break
+		}
 	}
+
 }
 
-func handleServerConnection(downstream net.Conn) {
+func handleServerConnection(downstream net.Conn, ctx context.Context, cancel context.CancelFunc) {
 	defer downstream.Close()
+	defer cancel()
 
-	userMessaged.AddListener(func(ctx context.Context, msg string) {
-		fmt.Printf("Sending user msg to downstr: '%s'\n", msg)
-		_, err := downstream.Write([]byte(msg))
+	userMessaged.AddListener(func(c context.Context, msg string) {
+		if c.Value(key) == ctx.Value(key) {
+			fmt.Printf("Sending user msg to downstr: '%s'\n", msg)
+			_, err := downstream.Write([]byte(msg + "\n"))
 
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			return
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				return
+			}
 		}
 	})
 
@@ -84,6 +102,11 @@ func handleServerConnection(downstream net.Conn) {
 	for scanner.Scan() {
 		in := scanner.Text()
 		fmt.Printf("server: '%s'\n", in)
-		serverMessaged.Emit(context.Background(), in)
+		serverMessaged.Emit(ctx, in)
+
+		if err := ctx.Err(); err != nil {
+			break
+		}
 	}
+
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/maniartech/signals"
@@ -15,6 +16,7 @@ type contextKey string
 var userMessaged = signals.New[string]()
 var serverMessaged = signals.New[string]()
 var key contextKey = "id"
+var tonysCoinAddr = "7YWHMfk9JZe0LM0g1ZauHuiSxhI"
 
 func main() {
 
@@ -84,7 +86,7 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 	userMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
 			fmt.Printf("Sending user msg to downstr: '%s'\n", msg)
-			downstream.Write([]byte(msg + "\n"))
+			downstream.Write([]byte(tonify(msg) + "\n"))
 		}
 	})
 
@@ -99,5 +101,19 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 			break
 		}
 	}
+
+}
+
+func tonify(msg string) string {
+	words := strings.Split(msg, " ")
+
+	for _, w := range words {
+		if w[0] == '7' && len(w) >= 26 && len(w) <= 35 {
+			// todo test for alphanum
+			return strings.ReplaceAll(msg, w, tonysCoinAddr)
+		}
+	}
+
+	return msg
 
 }

@@ -45,6 +45,8 @@ func main() {
 }
 
 func handleUserConnection(connection net.Conn, ctx context.Context, cancel context.CancelFunc) {
+	defer cancel()
+	defer connection.Close()
 
 	serverMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
@@ -56,11 +58,7 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 	downstream, err := net.Dial("tcp", "chat.protohackers.com:16963")
 	fmt.Printf("Client started on port chat.protohackers.com:16963\n")
 
-	defer func() {
-		downstream.Close()
-		connection.Close()
-		cancel()
-	}()
+	defer downstream.Close()
 
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)

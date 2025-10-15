@@ -50,7 +50,7 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 	serverMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
 			fmt.Printf("Downstream msg to user: '%s'\n", msg)
-			connection.Write([]byte(tonify(msg) + "\n"))
+			connection.Write([]byte(tonify(msg)))
 		}
 	})
 
@@ -68,7 +68,7 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 	buffer := make([]byte, 64*1024)
 	for {
 		n, err := connection.Read(buffer)
-		in := strings.TrimSuffix(string(buffer[0:n]), "\n")
+		in := string(buffer[0:n]) //strings.TrimSuffix(string(buffer[0:n]), "\n")
 		fmt.Printf("user: '%s'\n", in)
 		userMessaged.Emit(ctx, in)
 
@@ -95,14 +95,14 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 	userMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
 			fmt.Printf("Sending user msg to downstr: '%s'\n", msg)
-			downstream.Write([]byte(tonify(msg) + "\n"))
+			downstream.Write([]byte(tonify(msg)))
 		}
 	})
 
 	buffer := make([]byte, 64*1024)
 	for {
 		n, err := downstream.Read(buffer)
-		in := strings.TrimSuffix(string(buffer[0:n]), "\n")
+		in := string(buffer[0:n])
 		fmt.Printf("server: '%s'\n", in)
 		serverMessaged.Emit(ctx, in)
 

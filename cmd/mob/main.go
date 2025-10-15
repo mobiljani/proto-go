@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/maniartech/signals"
@@ -40,7 +40,6 @@ func main() {
 		ct := context.WithValue(cb, key, uuid.New().String())
 		ctx, cancel := context.WithCancel(ct)
 		go handleUserConnection(conn, ctx, cancel)
-
 	}
 }
 
@@ -51,7 +50,7 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 	serverMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
 			fmt.Printf("Downstream msg to user: '%s'\n", msg)
-			connection.Write([]byte(msg + "\n"))
+			connection.Write([]byte(tonify(msg) + "\n"))
 		}
 	})
 
@@ -63,12 +62,17 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 		return
 	}
 
-	scanner := bufio.NewScanner(connection)
 	fmt.Printf("Starting to read user messages\n")
 	go handleServerConnection(downstream, ctx, cancel)
 
-	for scanner.Scan() {
-		in := scanner.Text()
+	buffer := make([]byte, 64*1024)
+	for {
+		n, err := connection.Read(buffer)
+		in := strings.TrimSuffix(string(buffer[0:n]), "\n")
+
+		if err != nil {
+			break
+		}
 		fmt.Printf("user: '%s'\n", in)
 		userMessaged.Emit(ctx, in)
 
@@ -77,6 +81,8 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 		}
 	}
 
+	// Tell downstream to stop listening on messages once user disconnected
+	downstream.SetReadDeadline(time.Now())
 }
 
 func handleServerConnection(downstream net.Conn, ctx context.Context, cancel context.CancelFunc) {
@@ -90,30 +96,30 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 		}
 	})
 
-	scanner := bufio.NewScanner(downstream)
-	fmt.Printf("Starting to read server messages\n")
-	for scanner.Scan() {
-		in := scanner.Text()
-		fmt.Printf("server: '%s'\n", in)
+	buffer := make([]byte, 64*1024)
+	for {
+		n, err := downstream.Read(buffer)
+		in := strings.TrimSuffix(string(buffer[0:n]), "\n")
+
+		if err != nil {
+			break
+		}
 		serverMessaged.Emit(ctx, in)
 
 		if ctx.Err() != nil {
 			break
 		}
 	}
-
 }
 
 func tonify(msg string) string {
 	words := strings.Split(msg, " ")
-
 	for _, w := range words {
-		if w[0] == '7' && len(w) >= 26 && len(w) <= 35 {
+		if len(w) > 0 && w[0] == '7' && len(w) >= 26 && len(w) <= 35 {
 			// todo test for alphanum
 			msg = strings.ReplaceAll(msg, w, tonysCoinAddr)
 		}
 	}
 
 	return msg
-
 }

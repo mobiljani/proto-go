@@ -1,11 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"net"
+	"regexp"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/maniartech/signals"
@@ -62,22 +63,14 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 		return
 	}
 
+	scanner := bufio.NewScanner(connection)
 	fmt.Printf("Starting to read user messages\n")
 	go handleServerConnection(downstream, ctx, cancel)
 
-	buffer := make([]byte, 64*1024)
-	for {
-		n, err := connection.Read(buffer)
-		in := string(buffer[0:n]) //strings.TrimSuffix(string(buffer[0:n]), "\n")
+	for scanner.Scan() {
+		in := scanner.Text()
 		fmt.Printf("user: '%s'\n", in)
-
-		for _, s := range strings.Split(in, "\n") {
-			userMessaged.Emit(ctx, strings.ReplaceAll(s, "\r", ""))
-		}
-
-		if err != nil {
-			break
-		}
+		userMessaged.Emit(ctx, in)
 
 		if ctx.Err() != nil {
 			fmt.Printf("connection ctx has been cancelled\n")
@@ -86,9 +79,7 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 	}
 
 	cancel()
-
-	// Tell downstream to stop listening on messages once user disconnected
-	downstream.SetReadDeadline(time.Now())
+	downstream.Close()
 }
 
 func handleServerConnection(downstream net.Conn, ctx context.Context, cancel context.CancelFunc) {
@@ -102,19 +93,11 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 		}
 	})
 
-	buffer := make([]byte, 64*1024)
-	for {
-		n, err := downstream.Read(buffer)
-		in := string(buffer[0:n])
+	scanner := bufio.NewScanner(downstream)
+	for scanner.Scan() {
+		in := scanner.Text()
 		fmt.Printf("server: '%s'\n", in)
-		for _, s := range strings.Split(in, "\n") {
-			serverMessaged.Emit(ctx, strings.ReplaceAll(s, "\r", ""))
-		}
-
-		if err != nil {
-			fmt.Printf("downstream read has been cancelled with time out\n")
-			break
-		}
+		serverMessaged.Emit(ctx, in)
 
 		if ctx.Err() != nil {
 			fmt.Printf("downstream ctx has been cancelled\n")
@@ -127,8 +110,10 @@ func tonify(msg string) string {
 	words := strings.Split(msg, " ")
 	for _, w := range words {
 		if len(w) > 0 && w[0] == '7' && len(w) >= 26 && len(w) <= 35 {
-			// todo test for alphanum
-			msg = strings.ReplaceAll(msg, w, tonysCoinAddr)
+			is_alphanumeric := regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(w)
+			if is_alphanumeric {
+				msg = strings.ReplaceAll(msg, w, tonysCoinAddr)
+			}
 		}
 	}
 

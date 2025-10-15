@@ -50,7 +50,7 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 	serverMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
 			fmt.Printf("Downstream msg to user: '%s'\n", msg)
-			connection.Write([]byte(tonify(msg)))
+			connection.Write([]byte(tonify(msg) + "\n"))
 		}
 	})
 
@@ -70,7 +70,10 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 		n, err := connection.Read(buffer)
 		in := string(buffer[0:n]) //strings.TrimSuffix(string(buffer[0:n]), "\n")
 		fmt.Printf("user: '%s'\n", in)
-		userMessaged.Emit(ctx, in)
+
+		for _, s := range strings.Split(in, "\n") {
+			userMessaged.Emit(ctx, s)
+		}
 
 		if err != nil {
 			break
@@ -95,7 +98,7 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 	userMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
 			fmt.Printf("Sending user msg to downstr: '%s'\n", msg)
-			downstream.Write([]byte(tonify(msg)))
+			downstream.Write([]byte(tonify(msg) + "\n"))
 		}
 	})
 
@@ -104,7 +107,9 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 		n, err := downstream.Read(buffer)
 		in := string(buffer[0:n])
 		fmt.Printf("server: '%s'\n", in)
-		serverMessaged.Emit(ctx, in)
+		for _, s := range strings.Split(in, "\n") {
+			serverMessaged.Emit(ctx, s)
+		}
 
 		if err != nil {
 			fmt.Printf("downstream read has been cancelled with time out\n")

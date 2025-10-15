@@ -50,7 +50,7 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 	serverMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
 			fmt.Printf("Downstream msg to user: '%s'\n", msg)
-			connection.Write([]byte(tonify(msg)))
+			connection.Write([]byte(tonify(msg) + "\n"))
 		}
 	})
 

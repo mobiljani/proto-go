@@ -49,11 +49,7 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 	serverMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
 			fmt.Printf("Downstream msg to user: '%s'\n", msg)
-			_, err := connection.Write([]byte(msg + "\n"))
-			if err != nil {
-				fmt.Printf("Error: %v\n", err)
-				return
-			}
+			connection.Write([]byte(msg + "\n"))
 		}
 	})
 
@@ -74,7 +70,7 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 		fmt.Printf("user: '%s'\n", in)
 		userMessaged.Emit(ctx, in)
 
-		if err := ctx.Err(); err != nil {
+		if ctx.Err() != nil {
 			break
 		}
 	}
@@ -88,12 +84,7 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 	userMessaged.AddListener(func(c context.Context, msg string) {
 		if c.Value(key) == ctx.Value(key) {
 			fmt.Printf("Sending user msg to downstr: '%s'\n", msg)
-			_, err := downstream.Write([]byte(msg + "\n"))
-
-			if err != nil {
-				fmt.Printf("Error: %v\n", err)
-				return
-			}
+			downstream.Write([]byte(msg + "\n"))
 		}
 	})
 
@@ -104,7 +95,7 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 		fmt.Printf("server: '%s'\n", in)
 		serverMessaged.Emit(ctx, in)
 
-		if err := ctx.Err(); err != nil {
+		if ctx.Err() != nil {
 			break
 		}
 	}

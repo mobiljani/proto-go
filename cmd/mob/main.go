@@ -77,12 +77,15 @@ func handleUserConnection(connection net.Conn, ctx context.Context, cancel conte
 		userMessaged.Emit(ctx, in)
 
 		if ctx.Err() != nil {
+			fmt.Printf("connection ctx has been cancelled\n")
 			break
 		}
 	}
 
+	cancel()
+
 	// Tell downstream to stop listening on messages once user disconnected
-	downstream.SetReadDeadline(time.Now())
+	downstream.SetReadDeadline(time.Now().Add(time.Second))
 }
 
 func handleServerConnection(downstream net.Conn, ctx context.Context, cancel context.CancelFunc) {
@@ -102,11 +105,13 @@ func handleServerConnection(downstream net.Conn, ctx context.Context, cancel con
 		in := strings.TrimSuffix(string(buffer[0:n]), "\n")
 
 		if err != nil {
+			fmt.Printf("downstream read has been cancelled with time out\n")
 			break
 		}
 		serverMessaged.Emit(ctx, in)
 
 		if ctx.Err() != nil {
+			fmt.Printf("downstream ctx has been cancelled\n")
 			break
 		}
 	}

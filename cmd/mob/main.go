@@ -25,11 +25,11 @@ func main() {
 			fmt.Printf("Error: %v\n", err)
 			return
 		}
-		go handleUserConnection(conn)
+		go handleUpstreamConnection(conn)
 	}
 }
 
-func handleUserConnection(upstream net.Conn) {
+func handleUpstreamConnection(upstream net.Conn) {
 	defer upstream.Close()
 
 	downstream, err := net.Dial("tcp", "chat.protohackers.com:16963")
@@ -42,24 +42,28 @@ func handleUserConnection(upstream net.Conn) {
 		return
 	}
 
-	scanner := bufio.NewScanner(upstream)
 	fmt.Printf("Starting to read user messages\n")
-	go handleServerConnection(upstream, downstream)
+	go handleDownstreamConnection(upstream, downstream)
 
-	for scanner.Scan() {
-		in := scanner.Text()
+	r := bufio.NewReader(upstream)
+	for in, err := r.ReadString('\n'); ; {
+		if err != nil {
+			return
+		}
 		fmt.Printf("user: '%s'\n", in)
 		downstream.Write([]byte(tonify(in) + "\n"))
 	}
 }
 
-func handleServerConnection(upstream net.Conn, downstream net.Conn) {
+func handleDownstreamConnection(upstream net.Conn, downstream net.Conn) {
 	defer downstream.Close()
 	defer upstream.Close()
 
-	scanner := bufio.NewScanner(downstream)
-	for scanner.Scan() {
-		in := scanner.Text()
+	r := bufio.NewReader(downstream)
+	for in, err := r.ReadString('\n'); ; {
+		if err != nil {
+			return
+		}
 		fmt.Printf("server: '%s'\n", in)
 		upstream.Write([]byte(tonify(in) + "\n"))
 	}

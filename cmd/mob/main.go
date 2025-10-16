@@ -51,7 +51,7 @@ func handleUpstreamConnection(upstream net.Conn) {
 			return
 		}
 		fmt.Printf("user: '%s'\n", in)
-		downstream.Write([]byte(tonify(in) + "\n"))
+		downstream.Write([]byte(tonify(in)))
 	}
 }
 
@@ -65,7 +65,7 @@ func handleDownstreamConnection(upstream net.Conn, downstream net.Conn) {
 			return
 		}
 		fmt.Printf("server: '%s'\n", in)
-		upstream.Write([]byte(tonify(in) + "\n"))
+		upstream.Write([]byte(tonify(in)))
 	}
 }
 

@@ -47,16 +47,32 @@ func handleUpstreamConnection(upstream net.Conn) {
 
 	r := bufio.NewReader(upstream)
 	for {
-		in, err := r.ReadString('\n')
+		in, err := read(r)
 		if err != nil {
 			return
 		}
 		fmt.Printf("user: '%s'\n", in)
-		if _, err := downstream.Write([]byte(tonify(in))); err != nil {
+
+		_, err = downstream.Write([]byte(tonify(in)))
+		if err != nil {
 			fmt.Print("write error\n", err)
 			return
 		}
 	}
+}
+
+func read(r *bufio.Reader) (string, error) {
+	line, err := r.ReadString('\n')
+
+	// if line[len(line)-1] == '\n' {
+	// 	drop := 1
+	// 	if len(line) > 1 && line[len(line)-2] == '\r' {
+	// 		drop = 2
+	// 	}
+	// 	line = line[:len(line)-drop]
+	// }
+
+	return line, err
 }
 
 func handleDownstreamConnection(upstream net.Conn, downstream net.Conn) {
@@ -65,12 +81,14 @@ func handleDownstreamConnection(upstream net.Conn, downstream net.Conn) {
 
 	r := bufio.NewReader(downstream)
 	for {
-		in, err := r.ReadString('\n')
+		in, err := read(r)
 		if err != nil {
 			return
 		}
 		fmt.Printf("server: '%s'\n", in)
-		if _, err := downstream.Write([]byte(tonify(in))); err != nil {
+
+		_, err = upstream.Write([]byte(tonify(in)))
+		if err != nil {
 			fmt.Print("write error\n", err)
 			return
 		}

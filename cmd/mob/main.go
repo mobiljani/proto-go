@@ -60,11 +60,10 @@ func relay(from net.Conn, to net.Conn) {
 		if err != nil {
 			return
 		}
-		fmt.Printf("from: '%s'\n", in)
+		fmt.Printf("msg: '%s'\n", in)
 
 		_, err = to.Write([]byte(tonify(in)))
 		if err != nil {
-			fmt.Print("write error\n", err)
 			return
 		}
 	}

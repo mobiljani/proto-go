@@ -63,13 +63,13 @@ func handleUpstreamConnection(upstream net.Conn) {
 func read(r *bufio.Reader) (string, error) {
 	line, err := r.ReadString('\n')
 
-	// if line[len(line)-1] == '\n' {
-	// 	drop := 1
-	// 	if len(line) > 1 && line[len(line)-2] == '\r' {
-	// 		drop = 2
-	// 	}
-	// 	line = line[:len(line)-drop]
-	// }
+	if line[len(line)-1] == '\n' {
+		drop := 1
+		if len(line) > 1 && line[len(line)-2] == '\r' {
+			drop = 2
+		}
+		line = line[:len(line)-drop]
+	}
 
 	return line, err
 }
@@ -105,5 +105,5 @@ func tonify(msg string) string {
 		}
 	}
 
-	return msg
+	return msg + "\n"
 }

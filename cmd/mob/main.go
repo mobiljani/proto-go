@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"regexp"
 	"strings"
 )
 
@@ -99,10 +98,10 @@ func tonify(msg string) string {
 	words := strings.Split(msg, " ")
 	for _, w := range words {
 		if len(w) > 0 && w[0] == '7' && len(w) >= 26 && len(w) <= 35 {
-			is_alphanumeric := regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(w)
-			if is_alphanumeric {
-				msg = strings.ReplaceAll(msg, w, tonysCoinAddr)
-			}
+			// is_alphanumeric := regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(w)
+			// if is_alphanumeric {
+			msg = strings.ReplaceAll(msg, w, tonysCoinAddr)
+			//}
 		}
 	}
 

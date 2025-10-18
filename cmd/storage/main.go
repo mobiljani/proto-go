@@ -64,7 +64,7 @@ func handleConnection(conn net.Conn) {
 	}
 }
 
-var filename = regexp.MustCompile(`^/[a-zA-Z0-9] [ ._-]{2,256}$`)
+var filename = regexp.MustCompile(`^/[a-zA-Z0-9._-]{2,256}$`)
 
 func list(conn net.Conn, line string) {
 	params := getParams(line)

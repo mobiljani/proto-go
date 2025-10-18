@@ -46,13 +46,17 @@ func handleUpstreamConnection(upstream net.Conn) {
 	go handleDownstreamConnection(upstream, downstream)
 
 	r := bufio.NewReader(upstream)
+	r.
 	for {
 		in, err := r.ReadString('\n')
 		if err != nil || !strings.Contains(in, "\n") {
 			return
 		}
 		fmt.Printf("user: '%s'\n", in)
-		downstream.Write([]byte(tonify(in)))
+		if _, err := downstream.Write([]byte(tonify(in))); err != nil {
+			fmt.Print("write error\n", err)
+			return
+		}
 	}
 }
 
@@ -68,6 +72,10 @@ func handleDownstreamConnection(upstream net.Conn, downstream net.Conn) {
 		}
 		fmt.Printf("server: '%s'\n", in)
 		upstream.Write([]byte(tonify(in)))
+		if _, err := downstream.Write([]byte(tonify(in))); err != nil {
+			fmt.Print("write error\n", err)
+			return
+		}
 	}
 }
 

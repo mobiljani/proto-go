@@ -46,7 +46,6 @@ func handleUpstreamConnection(upstream net.Conn) {
 	go handleDownstreamConnection(upstream, downstream)
 
 	r := bufio.NewReader(upstream)
-	r.
 	for {
 		in, err := r.ReadString('\n')
 		if err != nil || !strings.Contains(in, "\n") {

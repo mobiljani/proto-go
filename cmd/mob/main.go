@@ -20,60 +20,49 @@ func main() {
 	}
 	for {
 		conn, err := list.Accept()
-
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			return
 		}
-		go handleUpstreamConnection(conn)
+
+		downstream, err := net.Dial("tcp", "chat.protohackers.com:16963")
+		fmt.Printf("Client started on port chat.protohackers.com:16963\n")
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			return
+		}
+
+		go handleUpstreamConnection(conn, downstream)
 	}
 }
 
-func handleUpstreamConnection(upstream net.Conn) {
+func handleUpstreamConnection(upstream net.Conn, downstream net.Conn) {
 	defer upstream.Close()
-
-	downstream, err := net.Dial("tcp", "chat.protohackers.com:16963")
-	fmt.Printf("Client started on port chat.protohackers.com:16963\n")
-
 	defer downstream.Close()
-
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
 
 	fmt.Printf("Starting to read user messages\n")
 	go handleDownstreamConnection(upstream, downstream)
 
-	r := bufio.NewReader(upstream)
-	for {
-		in, err := read(r)
-		if err != nil {
-			return
-		}
-		fmt.Printf("user: '%s'\n", in)
-
-		_, err = downstream.Write([]byte(tonify(in)))
-		if err != nil {
-			fmt.Print("write error\n", err)
-			return
-		}
-	}
+	relay(upstream, downstream)
 }
 
 func handleDownstreamConnection(upstream net.Conn, downstream net.Conn) {
 	defer downstream.Close()
 	defer upstream.Close()
 
-	r := bufio.NewReader(downstream)
+	relay(downstream, upstream)
+}
+
+func relay(from net.Conn, to net.Conn) {
+	r := bufio.NewReader(from)
 	for {
 		in, err := read(r)
 		if err != nil {
 			return
 		}
-		fmt.Printf("server: '%s'\n", in)
+		fmt.Printf("from: '%s'\n", in)
 
-		_, err = upstream.Write([]byte(tonify(in)))
+		_, err = to.Write([]byte(tonify(in)))
 		if err != nil {
 			fmt.Print("write error\n", err)
 			return
